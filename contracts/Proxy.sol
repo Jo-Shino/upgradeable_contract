@@ -1,15 +1,19 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
+import "./StorageSlot.sol";
+
+
 contract Proxy {
-    address implementaion;
+    address implementation;
+    uint x = 0;
 
     function changeImplementation(address _implementation) external {
-        implementaion = _implementation;
+        StorageSlot.getAddressSlot(keccak256('eip1967.proxy.implementation')).value = _implementation;
     }
 
     fallback() external {
-        (bool success,) = implementaion.call(msg.data);
+        (bool success, ) = StorageSlot.getAddressSlot(keccak256('eip1967.proxy.implementation')).value.delegatecall(msg.data);
         require(success);
     }
 }

@@ -43,23 +43,28 @@ describe("Proxy", function () {
 
       await proxyAsLogic1.changeX(52);
 
-      assert.equal(await lookupUint(await logic1.getAddress(), "0x0"), 52);
+      assert.equal(await lookupUint(await proxy.getAddress(), "0x0"), 52);
     });
 
     // Logic1->Logic2にアップグレードするテスト
     it("Should work upgrades", async function () {
-      const { proxy, logic1, logic2, proxyAsLogic1, proxyAsLogic2 } =
+      const { proxy, proxyAsLogic1, proxyAsLogic2, logic1, logic2 } =
         await loadFixture(deployFixture);
 
       await proxy.changeImplementation(await logic1.getAddress());
 
-      assert.equal(await lookupUint(await logic1.getAddress(), "0x0"), 0);
+      assert.equal(await lookupUint(await proxy.getAddress(), "0x0"), 0);
 
       await proxyAsLogic1.changeX(45);
 
-      assert.equal(await lookupUint(await logic1.getAddress(), "0x0"), 45);
+      assert.equal(await lookupUint(await proxy.getAddress(), "0x0"), 45);
+
+      await proxy.changeImplementation(await logic2.getAddress());
+
+      assert.equal(await lookupUint(await proxy.getAddress(), "0x0"), 45);
 
       await proxyAsLogic2.changeX(25);
+      await proxyAsLogic2.tripleX();
 
       assert(await lookupUint(await proxy.getAddress(), "0x0"), 75);
     });
